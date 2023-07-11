@@ -1,0 +1,200 @@
+clear;
+clc; 
+close all;
+
+gamma = 5;
+logistic_dist = makedist('Logistic','mu',0,'sigma',1/(2*gamma));
+
+x = -1.5:0.01:1.5;
+pdf_logistic = pdf(logistic_dist,x);
+cdf_logistic = cdf(logistic_dist,x);
+
+
+
+figure('Name','part 3-1','NumberTitle','off');
+subplot(2,1,1);
+plot(x,cdf_logistic,'linewidth',2,'color','r');
+title(sprintf('CDF logistic with gamma = %d',gamma));
+ylim([0,1.5]);
+grid on;
+grid minor; 
+
+subplot(2,1,2);
+plot(x,pdf_logistic,'linewidth',2,'color','b');
+title(sprintf('pdf logistic with gamma = %d',gamma));
+ylim([0,gamma/2*(1.5)]);
+grid on;
+grid minor; 
+
+
+
+
+
+%% Question 3 part 2
+
+clear;
+clc; 
+close all;
+
+dt = 0.002; % step of simulation
+T = 50; % end time simulation
+t = 0:dt:T; 
+
+R = 80;
+V_rest = -70;
+V_peak = 30;
+tav = 10; % time constant
+Vth_mean = -45;
+gamma = 2;
+beta = 5;
+
+L = length(t);
+I_ext = ones(1,L);
+V = zeros(1,L);
+V(1) = V_rest;
+V_spike = 0; j = 1;
+
+rng('default');  % For reproducibility
+logistic_dist = makedist('Logistic','mu',0,'sigma',1/(2*gamma));
+V_th = Vth_mean + ( random(logistic_dist,[1,L]) .* beta);
+
+for i=1:L-1
+    if V(i) == V_peak
+        V(i+1) = V_rest;
+    elseif V(i) > V_th(i)
+        V(i+1) = V_peak;
+        V_spike(j) = V(i);
+        j = j+1;
+    else
+        V(i+1) = V(i) + dt*(-V(i)+R.*I_ext(i))/tav;
+    end
+end
+
+figure('Name','part 3-2','NumberTitle','off');
+plot(t,V,'linewidth',1,'color','b');
+title(sprintf(...
+    'part 3-2 :  RI = %d mv , tav_m = %d ms , beta = %d , gamma = %d',...
+    R,tav,beta,gamma));
+xlabel('Time[ms]');
+ylabel('Voltage [mv]');
+grid on;
+grid minor; 
+
+
+
+
+
+%% Question 3 part 3
+
+clear;
+clc; 
+close all;
+
+dt = 0.002; % step of simulation
+T = 10000; % end time simulation
+t = 0:dt:T; 
+
+R = 20;
+V_rest = -70;
+V_peak = 30;
+tav = 10; % time constant
+Vth_mean = -45;
+gamma = 2;
+beta = 5;
+
+L = length(t);
+I_ext = ones(1,L);
+V = zeros(1,L);
+V(1) = V_rest;
+V_spike = 0; j = 1;
+
+rng('default');  % For reproducibility
+logistic_dist = makedist('Logistic','mu',0,'sigma',1/(2*gamma));
+V_th = Vth_mean + ( random(logistic_dist,[1,L]) .* beta);
+
+for i=1:L-1
+    if V(i) == V_peak
+        V(i+1) = V_rest;
+    elseif V(i) > V_th(i)
+        V(i+1) = V_peak;
+        V_spike(j) = V(i);
+        j = j+1;
+    else
+        V(i+1) = V(i) + dt*(-V(i)+R.*I_ext(i))/tav;
+    end
+end
+
+figure('Name','part 3-2','NumberTitle','off');
+histogram((V_spike-Vth_mean)./beta+1.2,30,'Normalization','pdf');
+hold on;
+
+x = -1.5:0.01:1.5;
+pdf_logistic = pdf(logistic_dist,x);
+plot(x,pdf_logistic,'linewidth',2,'color','b');
+
+
+
+title(sprintf(...
+    'part 3-2 :  RI = %d mv , tav_m = %d ms , beta = %d , gamma = %d',...
+    R,tav,beta,gamma));
+xlim([-1.5,1.5]);
+grid on;
+grid minor; 
+
+
+
+
+
+%% Question 3 part 4
+
+clear;
+clc; 
+close all;
+
+dt = 0.002; % step of simulation
+T = 1000; % end time simulation
+t = 0:dt:T; 
+
+R = 20;
+V_rest = -70;
+V_peak = 30;
+tav = 10; % time constant
+Vth_mean = -45;
+gamma = 100;
+beta = 5;
+
+L = length(t);
+I_ext = tripuls(t-T/2,T,1).*40;
+V = zeros(1,L);
+V(1) = V_rest;
+V_spike = 0; j = 1;
+I_spike = 0; 
+
+rng('default');  % For reproducibility
+logistic_dist = makedist('Logistic','mu',0,'sigma',1/(2*gamma));
+V_th = Vth_mean + ( random(logistic_dist,[1,L]) .* beta);
+
+for i=1:L-1
+    if V(i) == V_peak
+        V(i+1) = V_rest;
+    elseif V(i) > V_th(i)
+        V(i+1) = V_peak;
+        t_spike(j) = t(i);
+        I_spike(j) = I_ext(i);
+        j = j+1;
+    else
+        V(i+1) = V(i) + dt*(-V(i)+R.*I_ext(i))/tav;
+    end
+end
+
+figure('Name','part 3-4','NumberTitle','off');
+plot(I_spike,[0,1000./diff(t_spike)],'linewidth',1,'color','b');
+title(sprintf(...
+    'part 3-2 :   tav_m = %d ms , beta = %d , gamma = %d',...
+    tav,beta,gamma));
+xlabel('I-ext');
+ylabel('Firing rate [s^{-1}]');
+grid on;
+grid minor;
+
+
