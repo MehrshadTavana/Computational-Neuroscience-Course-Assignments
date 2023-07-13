@@ -1,9 +1,3 @@
-%% Question 2 part 3
-
-%%%%%%%% NOTE: PLEASE RUN PART BY PART
-
-%%%%%%%% part 2-3-1 Tonic Spiking
-
 name = 'Tonic Spiking';
 dt = 0.002; % step of simulation
 T = 100; % end time simulation
