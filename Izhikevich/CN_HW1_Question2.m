@@ -2,6 +2,7 @@ name = 'Tonic Spiking';
 dt = 0.002; % step of simulation
 T = 100; % end time simulation
 
+
 % Izhikevich parameter
 a=0.02;
 b=0.2;
