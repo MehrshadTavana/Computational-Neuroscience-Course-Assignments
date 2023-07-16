@@ -1,0 +1,72 @@
+clear;
+clc;
+close all;
+
+dt = 0.1;
+total_simulation_time = 1000;
+
+num_step = ceil(total_simulation_time/dt);
+t = (1:num_step).*dt; 
+
+EL = -70;  tav_m = 20;   I_Rm = 25;    Rm = 0.1;    vth = -54;    t_peak = 10;
+Es_exc = 0;   Es_inh = -80;    V_rest = -80;    V_spike = 0;
+
+initial_voltage = -80;
+%initial_voltage = -60;
+%initial_voltage = -40
+%initial_voltage = -20
+
+
+period_of_impulse = 30;
+%period_of_impulse = 60;
+%period_of_impulse = 20;
+%period_of_impulse = 10;
+
+
+E_s = Es_inh;   %%% for inhibitory
+%E_s = Es_exc;   %%% for excitatory
+
+
+impulse_train = zeros(size(t));
+impulse_train(1: ceil(period_of_impulse)/dt :end) = 1;
+
+v = zeros(size(t));
+
+v(1)=initial_voltage;
+
+kt = (t./t_peak).*exp(1-t./t_peak);  
+ 
+gt = conv(impulse_train,kt);
+
+gt = gt(1:num_step);
+
+for i=1:num_step-1
+      v(i+1) = v(i) - dt/tav_m*(v(i)-EL+gt(i)*(v(i)-E_s)*Rm-I_Rm);
+      
+      if v(i) == V_spike
+          v(i+1)= V_rest;
+      elseif v(i+1)>vth
+          v(i+1)= V_spike;
+      end
+      
+end
+
+
+figure;
+hold on;
+plot(t,impulse_train*80-80,'linewidth',1,'color','r');
+plot(t,v,'linewidth',1,'color','b');
+
+xlabel('Time');
+ylabel('v(t)');
+if E_s == Es_inh
+    title(sprintf(...
+        'Membrane Potential :\n inhibitory  ,  V(0) = %d [mV] ,  period of impulse train = %d [ms]',...
+        initial_voltage,period_of_impulse));
+else
+    title(sprintf(...
+        'Membrane Potential :\n excitatory  ,  V(0) = %d [mV] ,  period of impulse train = %d [ms]',...
+        initial_voltage,period_of_impulse));
+end
+legend('impulse train','v(t)');
+ylim([-80,10]);
