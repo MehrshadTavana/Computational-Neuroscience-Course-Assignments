@@ -1,0 +1,91 @@
+clc;
+clear;
+close all;
+
+image=imread('ponyo.jpeg');
+image = im2double(image);
+
+[row,col,dim]=size(image);
+N = row*col; 
+k=16;
+image_array = reshape(image,N,dim);
+
+rng('default');
+label = randi(k,N,1);
+
+distance = zeros(1,k); 
+center = zeros(k,dim);
+conversion = 0;
+
+m3 = 1;
+
+while conversion == 0
+    J(m3) = 0;
+    
+    for m1 = 1:k
+        center(m1,:) = mean(image_array(label == m1,:));
+    end
+    
+    for m1 = 1:N
+        for i2 = 1:k
+            distance(i2) = sqrt(sum( (image_array(m1,:) - center(i2,:) ).^2 ));
+        end
+        [min_distance,argmin] = min(distance);
+        J(m3) = J(m3) + min_distance;
+        label(m1) = argmin;
+    end
+    
+    if(m3>=2)
+        if J(m3) >= J(m3-1)
+            conversion = 1;
+        end
+    end
+    m3 = m3+1;
+end
+
+for m1 = 1:k
+    center(m1,:) = mean(image_array(label == m1,:));
+end
+K_means = image_array;
+for i = 1:N
+    K_means(i,:) = center(label(i),:);
+end
+im_k_means = reshape(K_means,row,col,dim);
+
+figure;
+subplot(1,2,1);
+imshow(image);
+title('original image');
+
+subplot(1,2,2);
+imshow(im_k_means);
+title(sprintf('k = %d',k));
+
+figure;
+plot(J);
+title('J : sum of Euclidean distance');
+xlabel('n');
+ylabel('J');
+
+
+figure;
+scatter3(image_array(:,1),image_array(:,2),image_array(:,3),10,label); 
+ax = gca;
+ax.XDir = 'reverse';
+xlim([0,1]);
+ylim([0,1]);
+zlim([0,1]);
+xlabel('R');
+ylabel('G');
+zlabel('B');
+
+cb = colorbar('Ticks',(1:k)); 
+caxis([1 k]);
+cb.Label.String = 'cluster';
+title('cluster');
+hold on;
+
+for i=1:k
+    scatter3(center(i,1),center(i,2),center(i,3),20,'filled','r');
+end
+
