@@ -1,0 +1,126 @@
+clear;
+clc;
+close all;
+rng('default');
+
+N = 20;
+ 
+load('data.mat');
+
+img = zeros(200,200);
+
+for i = 1:10
+    for j = 1:10
+        k = randi(5000);
+        img(N*(i-1)+1:N*i,N*(j-1)+1:N*j) = reshape(X(k,:),N,N);
+    end
+end
+
+figure;
+imshow(img);
+
+
+%% Question 1 Part 2
+
+train = zeros(3000,N*N);
+test = zeros(2000,N*N);
+y_train = zeros(3000,1);
+y_test = zeros(2000,1);
+
+for i = 1:10
+    train( (i-1)*300+1 : 300*i, :) = X((i-1)*500+1 : 500*i- 200, :);
+    test( (i-1)*200+1 : 200*i, :) = X((i-1)*500+301 : 500*i, :);
+    y_train( (i-1)*300+1 : 300*i) = y((i-1)*500+1 : 500*i- 200);
+    y_test( (i-1)*200+1 : 200*i) = y((i-1)*500+301 : 500*i);
+end
+
+
+%% Question 1 Part 3
+
+layer_1_size  = 400;
+layer_2_size  = 25;
+layer_3_size  = 10;
+
+initial_Theta1 = rand_Weights(layer_1_size, layer_2_size);
+initial_Theta2 = rand_Weights(layer_2_size, layer_3_size);
+
+initial_nn_params = [initial_Theta1(:) ; initial_Theta2(:)];
+
+
+%% Question 1 Part 4
+
+x = -5:0.01:5;
+sig_x = sigmoid(x);
+diff_sig_x = diff_sigmoid(x);
+figure;
+plot(x,sig_x,x,diff_sig_x);
+title(' Q1-part4 : test sigmoid(x) ');
+
+%% Question 1 Part 5
+
+%%%%%%% You can see the function of this part in a function script with
+%%%%%%% name of nnCostFinction in my HW files.
+
+%% Question 1 Part 6
+
+lambda = 1;
+
+costFunction = @(p) nnCostFunction(p, layer_1_size, layer_2_size,layer_3_size,...
+                                   train, y_train, lambda);
+                               
+options = optimset('MaxIter', 100);
+
+[nn_params, cost] = fmincg(costFunction, initial_nn_params, options);
+
+Theta1 = reshape(nn_params(1:layer_2_size * (layer_1_size + 1)), ...
+                 layer_2_size, (layer_1_size + 1));
+
+Theta2 = reshape(nn_params((1 + (layer_2_size * (layer_1_size + 1))):end), ...
+                 layer_3_size, (layer_2_size + 1));
+
+
+
+%% Question 1 Part 7
+
+num_test = size(test, 1);
+h1 = sigmoid( [ones(num_test,1), test] * Theta1');
+h2 = sigmoid( [ones(num_test,1), h1] * Theta2');
+[~,output] = max(h2, [], 2);
+
+y_test(y_test == 10) = 0;
+output(output == 10) = 0;
+
+num_of_img = 35;
+k = randi(length(y_test),num_of_img);
+figure;
+for i = 1:num_of_img
+    subplot(5,7,i);
+    imshow(reshape(test(k(i),:),N,N));
+    if y_test(k(i)) == output(k(i))
+        title(sprintf('num = %d, output = %d',y_test(k(i)),output(k(i))),'color','b');
+    else
+        title(sprintf('num = %d, output = %d',y_test(k(i)),...
+            output(k(i))),'color','r');
+    end
+end
+
+%% Question 1 Part 8
+
+wrong_index = output ~= y_test;
+wrong_detect = test(wrong_index,:);
+wrong_output = output(wrong_index);
+wrong_y_test = y_test(wrong_index);
+
+N_wrong_detect = length(wrong_output);
+
+fprintf('\naccuracy = %.2f%% \n',(2000-N_wrong_detect)./2000 .*100);
+
+figure;
+for i = 1:layer_2_size
+    subplot(5,5,i);
+    img = Theta1(i, 2:end);
+    img = reshape(img,N,N);
+    img = rescale(img,0,1);
+    imshow(img);
+end
+
