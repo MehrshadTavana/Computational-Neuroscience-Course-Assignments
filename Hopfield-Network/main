@@ -1,0 +1,154 @@
+clear;
+clc;
+close all;
+rng('default');
+
+M = 6;
+for i = 1:M
+    name = sprintf('img_HW5_ (%d).png',i);
+    img{i} = int8(imread(name));
+end
+
+figure;
+for i = 1:M
+    subplot(2,3,i);
+    imagesc(img{i});
+    title(sprintf('img %d',i));
+end
+
+
+%% Question 1 part 2.2
+
+[row,col]=size(img{1});
+N = row*col;
+train = zeros(N,M,'int8');
+for i = 1:M
+    train(:,i) = reshape(img{i},N,1);
+end
+train(train == 0) = -1;
+train(train == 127) = 1;
+
+W = zeros(N,N,'int8');
+
+for i = 1:M
+    W = W + int8_multiply(train(:,i), train(:,i)') ;
+end
+
+figure;
+imagesc(W);
+colorbar;
+
+corr_0 = corr_img(train , train);
+
+
+%% Question 1 part 2.3
+
+output_0 = hopfield(W,train);
+
+show_result(output_0, (1:M), row, col);
+
+error_0 = N - sum( (output_0.*train) == 1);
+
+
+%% Question 1 part 2.4
+
+noise_number = 3000;
+
+input_3k = zeros(size(train),'int8');
+
+for i = 1:M
+    input_3k(:,i) = add_noise(train(:,i), noise_number);
+end
+
+show_result(input_3k, (1:M), row, col);
+
+
+%% Question 1 part 2.5
+corr_3k = corr_img(input_3k , train);
+
+
+%% Question 1 part 2.6
+
+output_3k = hopfield(W,input_3k);
+
+show_result(output_3k, (1:M), row, col);
+
+error_3k = N - sum( (output_3k.*train) == 1);
+
+
+%% Question 1 part 2.7
+
+noise_number = 8000;
+
+input_8k = zeros(size(train),'int8');
+
+for i = 1:M
+    input_8k(:,i) = add_noise(train(:,i), noise_number);
+end
+
+show_result(input_8k, (1:M), row, col);
+
+corr_8k = corr_img(input_8k , train);
+
+steps = 3;
+
+error_8k = zeros(steps,M);
+
+for i = 1:5
+    output_8k = hopfield(W,input_8k);
+    show_result(output_8k, (1:M), row, col);
+    error_8k(i,:) = N - sum( (output_8k.*train) == 1);
+    input_8k = output_8k;
+end
+
+
+
+%% Functions
+
+function vector = add_noise(vector, N) % N is number of pixels will change
+    L = length(vector);
+    change = randperm(L,N);
+    vector(change) = -vector(change);
+end
+
+function out = int8_multiply(x, y)
+    [m,n] = size(x);
+    [k,p] = size(y);
+    if n == k
+        out = zeros(m,p,class(x));
+        for i = 1:m
+            for j = 1:p
+                out(i,j) = sum( x(i,:)' .* y(:,j) );
+            end
+        end
+    else
+        out = 0;
+    end
+end
+
+function show_result(result, index, row, col)
+    figure;
+    for i = index
+        subplot(2,3,i);
+        imagesc(reshape( result(:,i),row,col));
+        title(sprintf('img %d',i));
+    end
+end
+
+function out = corr_img(im1,im2)
+    [N,m] = size(im1);
+    n = size(im1,2);
+    out = zeros(m,n);
+    for i = 1:m
+        for j = 1:n
+            out(i,j) = sum( im1(:,i).*im2(:,j) )/N;
+        end
+    end
+end
+
+function output = hopfield(W,input)
+    output = zeros(size(input),'int8');
+    for i = 1: size(input,2)
+        output(:,i) = sign( int8_multiply(W, input(:,i)) );
+    end
+end
