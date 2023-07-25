@@ -1,0 +1,148 @@
+clc;
+clear;
+close all;
+
+trials = ones(200,1);
+rewards = [ones(100,1);zeros(100,1)];
+learning_rate = 0.05;
+
+weigth = zeros(length(trials),1);
+
+for i = 1:length(weigth)
+   weigth(i+1) = weigth(i) + learning_rate .* (rewards(i) - weigth(i)*trials(i)) * trials(i); 
+end
+
+figure
+plot(1:length(weigth),weigth)
+xlabel('trials')
+ylabel('weigth')
+xlim([0 200])
+title('plot of weigth by trials')
+
+%% Question 2 Part 2
+
+%%%%% Please choose any alpha or rewards that you desire
+alpha = 0.5;
+%alpha = 0.8;
+trials = ones(200,1);
+
+rewards = binornd(1,alpha,200);
+%rewards = binornd(2,alpha,200);
+
+rewards = rewards(1,:);
+learning_rate = 0.05;
+
+weigth = zeros(length(trials),1);
+
+for i = 1:length(weigth)
+   weigth(i+1) = weigth(i) + learning_rate .* (rewards(i) - weigth(i)*trials(i)) * trials(i); 
+end
+
+figure
+plot(1:length(weigth),weigth)
+xlabel('trials')
+ylabel('weigth')
+xlim([0 200])
+title('plot of weigth by trials')
+grid on
+
+
+%% Question 2 Part 3
+
+trials = ones(200,2);
+rewards = [ones(length(trials),1),zeros(length(trials),1)];
+learning_rate = 0.05;
+
+weigth = [ones(length(trials),1),zeros(length(trials),1)];
+
+for i = 1:length(weigth)-1
+   weigth(i+1,1) = weigth(i,1) + learning_rate .* (rewards(i,1) - weigth(i,1)*trials(i,1)) * trials(i,1);
+   weigth(i+1,2) = weigth(i,2) + learning_rate .* (rewards(i,2) - weigth(i,2)*trials(i,2)) * trials(i,2);
+end
+
+figure
+plot(1:length(weigth),weigth(:,1))
+xlabel('trials')
+ylabel('weigth1')
+xlim([0 200])
+title('plot of weigth1 by trials')
+grid on
+
+figure
+plot(1:length(weigth),weigth(:,2))
+xlabel('trials')
+ylabel('weigth2')
+xlim([0 200])
+title('plot of weigth2 by trials')
+grid on
+
+%% Question 2 Part 4
+
+trials = binornd(1,0.5,400);
+trials = trials(:,1);
+
+rewards = [ones(400,1),zeros(400,1)];
+
+for i = 1:length(trials)
+    
+    if(trials(i))
+        rewards(i,2) = 0;
+    else
+        rewards(i,2) = 1;               
+    end
+
+end
+
+trials = [ones(400,1),trials];
+weigth = [zeros(length(trials),1),zeros(length(trials),1)];
+
+for i = 1:length(trials)-1
+   weigth(i+1,1) = weigth(i,1) + learning_rate .* (rewards(i,1) - weigth(i,1)*trials(i,1)) * trials(i,1);
+end
+
+
+figure
+plot(1:length(weigth),weigth(:,1))
+xlabel('trials')
+ylabel('weigth')
+xlim([0 400])
+title('plot of weigth by trials')
+grid on
+
+
+%% Question 2 Part 5
+
+trials = ones(200,2);
+rewards = ones(200,2);
+learning_rate1 = 0.05;
+learning_rate2 = 0.05;
+
+weigth = zeros(length(trials),2);
+
+for i = 1:length(weigth)
+   weigth(i+1,1) = weigth(i,1) + learning_rate1 .* (rewards(i,1) - weigth(i,1)*trials(i,1)) * trials(i,1);
+   weigth(i+1,2) = weigth(i,2) + learning_rate2 .* (rewards(i,2) - weigth(i,2)*trials(i,2)) * trials(i,2); 
+end
+
+weigth(:,1) = (learning_rate1/(learning_rate1 + learning_rate2)) * weigth(:,1);
+weigth(:,2) = (learning_rate2/(learning_rate1 + learning_rate2)) * weigth(:,2);
+
+
+
+figure
+plot(1:length(weigth),weigth(:,1))
+xlabel('trials')
+ylabel('weigth1')
+xlim([0 200])
+title('plot of weigth by trials')
+
+
+figure
+plot(1:length(weigth),weigth(:,1))
+xlabel('trials')
+ylabel('weigth2')
+xlim([0 200])
+title('plot of weigth by trials')
+
+
+
