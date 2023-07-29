@@ -1,0 +1,86 @@
+clear;
+clc;
+close all;
+ 
+load('Q2_data.mat');
+
+time = (-49.5:1000/Fs:200); %ms
+
+figure;
+raster_plot(trials(1,:),time);
+
+figure;
+raster_plot(trials(1:20,:),time);
+
+figure;
+raster_plot(trials,time);
+
+%% Question 2 part 2 and 3
+width = [5, 10, 20, 35]; %ms
+for i = 1: length(width)
+    [f_out, t_out] = firing_rate(trials,width(i),time);
+    figure;
+    PETH(f_out, t_out);
+end
+
+
+
+%% Functions
+
+function raster_plot(trials,time)
+    [N_trial, N_time] = size(trials);
+    
+    if length(time) ~= N_time
+        disp('time vector is not fit for trials');
+    else
+
+        hold on;
+        for i = 1:N_trial
+            spike_time = time( trials(i,:)==1 );
+            x = [spike_time; spike_time];
+            y = repmat([i-0.5;i+0.5], 1, length(spike_time));
+            plot(x, y,'color','k','LineWidth',0.4);
+        end
+
+        xlabel('Time [ms]');
+        ylabel('Trials');
+        xlim([time(1),time(end)]);
+        ylim([0,N_trial+1]);
+
+        xline(0,'--b','LineWidth',2);
+    end
+    
+end
+
+function [f_out, t_out] = firing_rate(trials, width, time)
+
+    N_width = width/(time(2) - time(1));
+
+    [N_trial, N_time] = size(trials);
+    L = ceil(N_time/N_width);
+    
+    f_out = zeros(N_trial, L);
+    t_out = zeros(1, L);
+    
+    for i=1:N_trial
+        for j = 1:L
+            f_out(i,j) = sum(trials(i, 1+(j-1)*N_width : min(j*N_width,N_time) ));
+        end
+    end
+    
+    for j = 1:L
+        t_out(j) = mean(time( 1+(j-1)*N_width : min(j*N_width,N_time) ));
+    end
+end
+
+function PETH(firing_rate, t)
+    y = mean(firing_rate);
+    bar(t,y,1);
+    xlabel('Time [ms]');
+    ylabel('average firing rate');
+    xlim([-50,200]); %
+    title(sprintf('width = %d ms', t(2) - t(1)));
+    hold on;
+    xline(0,'--b','LineWidth',2);
+    
+end
