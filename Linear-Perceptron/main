@@ -1,0 +1,47 @@
+clear;
+clc;
+close all;
+
+theta_1 = [0.5, -1, 2;
+    -3, -1, 9;
+    -3, 1, 9;
+    0.5, 1, 2;
+    1, 0, 0;
+    -1, 0, 0;
+    -0.5, 1, 2;
+    3, 1, 9;
+    3, -1, 9;
+    -0.5, -1, 2];
+theta_2 = [1 1 1 1 1 0 0 0 0 0 -4.5;
+           0 0 0 0 0 1 1 1 1 1 -4.5];
+theta_3 = [1 1 -0.5];
+
+figure;
+hold on;
+
+for i = -5:5
+    for j = -5:5
+        U = [i; j; 1];
+        V = sigmoid(100.* theta_1 * U);
+        A = sigmoid(100.* theta_2 * [V;1]);
+        out = sigmoid(100.* theta_3 * [A;1]);
+        if out>= 0.5
+            scatter(i,j,'g','filled');
+        else
+            scatter(i,j,'r','filled');
+        end
+    end
+end
+
+title('linear perceptron');
+xlim([-6,6]);
+ylim([-6,6]);
+grid on;
+grid minor;
+
+
+%% Functions
+
+function y = sigmoid(x)
+    y = 1 ./(1 + exp(-x));
+end
