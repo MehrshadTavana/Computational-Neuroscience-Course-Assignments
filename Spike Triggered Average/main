@@ -1,0 +1,76 @@
+clc;
+clear;
+close all;
+
+load('Q3_data.mat');
+
+time = (1:Fs);
+
+figure
+plot((1/Fs:1/Fs:1),Stim(time));
+xlabel('Time [ms]');
+ylabel('Signal [mV]');
+grid minor
+
+%% Question 3 part 2
+
+a = randn(400,1);
+
+numelements = round(0.05*length(a));
+
+indices = randperm(length(a));
+
+indices = indices(1:numelements);
+
+times = Spike_times(indices);
+
+times = times.*Fs;
+
+for i = 1:20
+    subplot(4,5,i);
+    x = times(i)-149:times(i);
+    y = Stim(x);
+    x = x./2000;
+    plot(x,y)
+    title(sprintf('spike number %d ', indices(i)))
+    grid minor
+end
+
+
+%% Question 3 part 3
+
+times_new = Spike_times(1:598);
+
+times_new = times_new.*Fs;
+
+spikes = zeros(598,150);
+
+mean_spikes = zeros(1,150);
+
+for i = 1:150
+    spikes(i,:) = Stim(times_new(i)-149:times_new(i));
+    mean_spikes(i) = sum(spikes(:,i))./150;
+    warning off;
+end
+
+figure
+plot(1/2:1/2:75,mean_spikes)
+xlabel('Time [ms]')
+title('Spike Triggered Avarage')
+grid minor
+
+
+%% Question 3 part 4
+
+figure
+
+for i = 1:20
+    plot(0.5:0.5:75,Stim(times(i)-149:times(i)),'color','b');
+    hold on
+end
+
+plot(0.5:0.5:75,mean_spikes,'color','r','LineWidth',2)
+xlabel('Time [ms]')
+ylabel('Signal [mV]');
+title('Spike Triggered Avarage')
+grid minor
